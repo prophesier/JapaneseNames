@@ -5,7 +5,7 @@
 ## 项目简介
 
 本项目使用深度学习技术训练一个 Transformer 模型，用于生成符合日语命名规则的假名人名。模型支持：
-- 根据性别（男/女）生成相应风格的名字
+- 根据性别（男/女/不指定）生成相应风格的名字
 - 根据给定前缀续写完整名字
 - 字符级别的序列生成
 
@@ -25,13 +25,13 @@ torch>=2.0.0
 pandas
 matplotlib
 scikit-learn
-transformers
 ```
 
 ## 安装依赖
 
 ```bash
-pip install torch pandas matplotlib scikit-learn transformers
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+pip install pandas matplotlib scikit-learn 
 ```
 
 ## 数据集
@@ -68,43 +68,28 @@ model = TransformerModel(
 train_losses, test_losses, test_accs = train(
     model, 
     transinput, 
-    test_input=test_transinput,
+    test_input=test_transinput, 
     epochs=100, 
     lr=0.0001, 
-    batch_size=128,
-    save_path='best_model.pth'
-)
+    batch_size=128, 
+    padding_value=hiragana_map["padding"], 
+    save_path='best_model.pth')
 ```
 
 ### 2. 加载模型
 
 ```python
-model = TransformerModel(vocab_size=len(hiragana_map), embedding_dim=256)
+model = TransformerModel(vocab_size=len(hiragana_map), embedding_dim=256,dropout=0.2,num_heads=8,layers=6)
 model = load_model(model, 'best_model.pth')
 ```
 
 ### 3. 生成名字
 
 ```python
-sex = "Female"  # 或 "Male"
-prefix = "さくら"  # 名字前缀
-
-# 生成完整名字
-test_in = ["."] + [sex] + [i for i in prefix]
-test_x = [hiragana_map.get(c, 0) for c in test_in]
-
-model.eval()
-with torch.no_grad():
-    while True:
-        test_input = torch.tensor(test_x).unsqueeze(0).to(device)
-        output = model(test_input)
-        output_index = output[0, -1].argmax().item()
-        test_x.append(output_index)
-        if output_index == 0 or len(test_x) > padding_length:
-            break
-
-result = "".join([hiragana_index_map.get(i, "") for i in test_x[1:-1]])
-print(result)
+sex="Female"#"Male"/"Female"/""
+prefix="やまもと"  # 输入名字的前缀
+generated_name = generator(model, sex, prefix, max_length=padding_length, temperature=0.5)
+print(generated_name)
 ```
 
 ## 模型架构
