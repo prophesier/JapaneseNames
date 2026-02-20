@@ -49,3 +49,6 @@ Thumbs.db
 # Data (如果数据文件很大，可以不上传)
 # data/
 # *.csv
+
+#test
+test.py
