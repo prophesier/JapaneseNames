@@ -102,7 +102,7 @@ print(generated_name)
 
 
 ### 训练细节
-- **优化器**: Adam (lr=0.0001)
+- **优化器**: AdamW (lr=0.0001)
 - **Batch Size**: 128
 - **梯度裁剪**: max_norm=1.0
 - **训练集大小**: ~40,000 样本
